@@ -11,6 +11,9 @@ namespace OCRForXJXQ
 {
     using System.Net;
     using System.IO;
+    using System.Xml;
+    using Newtonsoft.Json.Serialization;
+    using Newtonsoft.Json;
     public partial class Form1 : Form
     {
         string m_requestTokenFileName = "";
@@ -19,7 +22,7 @@ namespace OCRForXJXQ
         public Form1()
         {
             InitializeComponent();
-            m_systemPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "..\\system");
+            m_systemPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "..\\..\\system");
             m_requestTokenFileName = Path.Combine(m_systemPath, "requestTokenString.txt");
             m_tokenFileName = Path.Combine(m_systemPath, "token.txt");
         }
@@ -30,14 +33,15 @@ namespace OCRForXJXQ
             var str = "";
             if (File.Exists(m_tokenFileName))
                 str = File.ReadAllText(m_tokenFileName);
-            var ary = str.Split(':');
+            var ary = str.Split(';');
             string token = "";
-            if (ary[0] == string.Format("{0:yyyyMMdd}", DateTime.Now) && ary.Length > 1)
+            DateTime dt;
+            if (DateTime.TryParse(ary[0], out dt) && dt > DateTime.Now)
                 token = ary[1];
             else
             {
                 string token_jsonParam = File.ReadAllText(m_requestTokenFileName, Encoding.UTF8);
-                var token_url = "https://iam.cn-north-4.myhuaweicloud.com/v3/auth/tokens";
+                var token_url = "https://iam.myhuaweicloud.com/v3/auth/tokens";
                 var token_request = (HttpWebRequest)WebRequest.Create(token_url);
                 token_request.Method = "POST";
                 token_request.ContentType = "application/json;charset=UTF-8";
@@ -58,7 +62,14 @@ namespace OCRForXJXQ
                             break;
                         }
                     }
-                    File.WriteAllText(m_tokenFileName, string.Format("{0:yyyyMMdd}:{1}", DateTime.Now, token), Encoding.UTF8);
+                    using (var responseStream = tResponse.GetResponseStream())
+                    using (var reader = new StreamReader(responseStream))
+                    {
+                        string report = reader.ReadToEnd();
+                        var tree = JsonConvert.DeserializeXmlNode(report).ChildNodes;
+
+                        File.WriteAllText(m_tokenFileName, tree[0].ChildNodes[0].ChildNodes[0].Value + ";" + token, Encoding.UTF8);
+                    }
                 }
             }
             if (token == "")
@@ -66,12 +77,12 @@ namespace OCRForXJXQ
                 MessageBox.Show("token获取失败.");
                 return;
             }
-            string _url = "https://ocr.cn-north-4.myhuaweicloud.com/v1.0/ocr/general-table";
+            string _url = "https://ocr.cn-north-1.myhuaweicloud.com/v1.0/ocr/general-table";
             var request = (HttpWebRequest)WebRequest.Create(_url);
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.Headers.Add("X-Auth-Token", token.Replace("\n", "").Replace("\r", ""));
-            string imgFileName = @"C:\Users\dibowei1980\Desktop\新建文件夹\0001\0001.jpg";
+            request.Headers.Add("X-Auth-Token", token);
+            string imgFileName = Path.Combine(m_systemPath, "test\\0001.png");
             var base64 = Convert.ToBase64String(System.IO.File.ReadAllBytes(imgFileName));
             var jsonParam = string.Format("{1}\"image\" : \"{0}\",\n\"return_confidence\" : false{2}", base64, "{", "}");
             byte[] byteData = Encoding.UTF8.GetBytes(jsonParam);

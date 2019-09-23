@@ -1,0 +1,23 @@
+﻿{ 
+    "auth": { 
+        "identity": { 
+            "methods": [ 
+                "password" 
+            ], 
+            "password": { 
+                "user": { 
+                    "name": "dibowei1980", 
+                    "password": "qazwsx12345678", 
+                    "domain": { 
+                        "id": "05fe99fd660010a10f95c01b54e4d540" 
+                    } 
+                } 
+            } 
+        }, 
+        "scope": { 
+            "project": { 
+                "name": "cn-north-1" 
+            } 
+        } 
+    } 
+}

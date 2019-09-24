@@ -36,7 +36,8 @@ namespace OCRForXJXQ
             var ary = str.Split(';');
             string token = "";
             DateTime dt;
-            if (DateTime.TryParse(ary[0], out dt) && dt > DateTime.Now)
+            DateTime.TryParse(ary[0], out dt);
+            if (dt > DateTime.Now)
                 token = ary[1];
             else
             {
@@ -94,8 +95,19 @@ namespace OCRForXJXQ
             using (var response = (HttpWebResponse)request.GetResponse())
             {
                 var responseString = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding("utf-8")).ReadToEnd();
-                MessageBox.Show(responseString.ToString());
+                File.WriteAllText("c:\\test_json.txt", responseString, Encoding.UTF8);
             }
         }
+
+        private void btn_ParseJson_Click(object sender, EventArgs e)
+        {
+            string jsonString = File.ReadAllText("c:\\test_json.txt", Encoding.UTF8);
+            OTable table = JsonConvert.DeserializeObject<OTable>(jsonString);
+            OCRTable oCRTable = new OCRTable(table);
+            var json = JsonConvert.SerializeObject(oCRTable);
+        }
+
+        
+
     }
 }

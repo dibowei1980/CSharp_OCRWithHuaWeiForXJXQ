@@ -9,75 +9,62 @@ using System.Diagnostics;
 
 namespace OCRForXJXQ
 {
-
+    using O2S.Components.PDFRender4NET;
     public class ConvertPdf2Image
     {
+        public enum Definition
+        {
+            One = 1, Two = 2, Three = 3, Four = 4, Five = 5, Six = 6, Seven = 7, Eight = 8, Nine = 9, Ten = 10
+        }
+
         /// <summary>
-        /// 将PDF文档转换为图片的方法，你可以像这样调用该方法：ConvertPDF2Image("F:\\A.pdf", "F:\\", "A", 0, 0, null, 0);
-        /// 因为大多数的参数都有默认值，startPageNum默认值为1，endPageNum默认值为总页数，
-        /// imageFormat默认值为ImageFormat.Jpeg，resolution默认值为1
+        /// 将PDF文档转换为图片的方法
         /// </summary>
         /// <param name="pdfInputPath">PDF文件路径</param>
-        /// <param name="startPageNum">从PDF文档的第几页开始转换，默认值为1</param>
-        /// <param name="endPageNum">从PDF文档的第几页开始停止转换，默认值为PDF总页数</param>
+        /// <param name="imageOutputPath">图片输出路径</param>
+        /// <param name="imageName">生成图片的名字</param>
+        /// <param name="startPageNum">从PDF文档的第几页开始转换</param>
+        /// <param name="endPageNum">从PDF文档的第几页开始停止转换</param>
         /// <param name="imageFormat">设置所需图片格式</param>
-        /// <param name="resolution">设置图片的分辨率，数字越大越清晰，默认值为1</param>
-        public static void Convert(string pdfInputPath,
-            int startPageNum = 1, int endPageNum = -1, ImageFormat imageFormat = null, double resolution = 1)
+        /// <param name="definition">设置图片的清晰度，数字越大越清晰</param>
+        public static void Convert(string pdfInputPath, string imageOutputPath = "",
+            string imageName = "", int startPageNum = -1, int endPageNum = -1, ImageFormat imageFormat = null, Definition definition = Definition.Ten)
         {
-            Acrobat.CAcroPDDoc pdfDoc = null;
-            Acrobat.CAcroPDPage pdfPage = null;
-            Acrobat.CAcroRect pdfRect = null;
-            Acrobat.CAcroPoint pdfPoint = null;
+            PDFFile pdfFile = PDFFile.Open(pdfInputPath);
+            if (imageOutputPath == "")
+                imageOutputPath = Path.GetDirectoryName(pdfInputPath);
+            if (imageName == "")
+                imageName = Path.GetFileNameWithoutExtension(pdfInputPath);
+            if (!Directory.Exists(imageOutputPath))
+                Directory.CreateDirectory(imageOutputPath);
+            if (imageFormat == null)
+                imageFormat = ImageFormat.Png;
+            if (startPageNum <= 1)
+                startPageNum = 1;
+            // validate pageNum
+            if (startPageNum <= 0)
+            {
+                startPageNum = 1;
+            }
 
-            // Create the document (Can only create the AcroExch.PDDoc object using late-binding)
-            // Note using VisualBasic helper functions, have to add reference to DLL
-            pdfDoc = (Acrobat.CAcroPDDoc)Microsoft.VisualBasic.Interaction.CreateObject("AcroExch.PDDoc", "");
-            var imageOutputPath = Path.GetDirectoryName(pdfInputPath);
-            var imageName = Path.GetFileNameWithoutExtension(pdfInputPath);
-            // validate parameter
-            if (!pdfDoc.Open(pdfInputPath)) { throw new FileNotFoundException(); }
-            if (!Directory.Exists(imageOutputPath)) { Directory.CreateDirectory(imageOutputPath); }
-            if (startPageNum <= 0) { startPageNum = 1; }
-            if (endPageNum > pdfDoc.GetNumPages() || endPageNum <= 0) { endPageNum = pdfDoc.GetNumPages(); }
-            if (startPageNum > endPageNum) { int tempPageNum = startPageNum; startPageNum = endPageNum; endPageNum = startPageNum; }
-            if (imageFormat == null) { imageFormat = ImageFormat.Png; }
-            if (resolution <= 0) { resolution = 1; }
+            if (endPageNum > pdfFile.PageCount || endPageNum < 1)
+                endPageNum = pdfFile.PageCount;
+
+            if (startPageNum > endPageNum)
+            {
+                int tempPageNum = startPageNum;
+                startPageNum = endPageNum;
+                endPageNum = startPageNum;
+            }
 
             // start to convert each page
             for (int i = startPageNum; i <= endPageNum; i++)
             {
-                pdfPage = (Acrobat.CAcroPDPage)pdfDoc.AcquirePage(i - 1);
-                pdfPoint = (Acrobat.CAcroPoint)pdfPage.GetSize();
-                pdfRect = (Acrobat.CAcroRect)Microsoft.VisualBasic.Interaction.CreateObject("AcroExch.Rect", "");
-
-                int imgWidth = (int)((double)pdfPoint.x * resolution);
-                int imgHeight = (int)((double)pdfPoint.y * resolution);
-
-                pdfRect.Left = 0;
-                pdfRect.right = (short)imgWidth;
-                pdfRect.Top = 0;
-                pdfRect.bottom = (short)imgHeight;
-
-                // Render to clipboard, scaled by 100 percent (ie. original size)
-                // Even though we want a smaller image, better for us to scale in .NET
-                // than Acrobat as it would greek out small text
-                pdfPage.CopyToClipboard(pdfRect, 0, 0, (short)(100 * resolution));
-
-                IDataObject clipboardData = Clipboard.GetDataObject();
-
-                if (clipboardData.GetDataPresent(DataFormats.Bitmap))
-                {
-                    Bitmap pdfBitmap = (Bitmap)clipboardData.GetData(DataFormats.Bitmap);
-                    pdfBitmap.Save(Path.Combine(imageOutputPath, imageName) + i.ToString() + "." + imageFormat.ToString(), imageFormat);
-                    pdfBitmap.Dispose();
-                }
+                Bitmap pageImage = pdfFile.GetPageImage(i - 1, 56 * (int)definition);
+                pageImage.Save(Path.Combine(imageOutputPath, imageName + "_" + i.ToString() + "." + imageFormat.ToString()), imageFormat);
+                pageImage.Dispose();
             }
-            pdfDoc.Close();
-            Marshal.ReleaseComObject(pdfPage);
-            Marshal.ReleaseComObject(pdfRect);
-            Marshal.ReleaseComObject(pdfDoc);
-            Marshal.ReleaseComObject(pdfPoint);
+            pdfFile.Dispose();
         }
     }
 }

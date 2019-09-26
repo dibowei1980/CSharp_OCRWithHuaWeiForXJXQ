@@ -31,6 +31,7 @@
             this.process = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btn_ParseJson = new System.Windows.Forms.Button();
+            this.btn_PDF2IMG = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,15 +59,26 @@
             this.btn_ParseJson.Name = "btn_ParseJson";
             this.btn_ParseJson.Size = new System.Drawing.Size(106, 41);
             this.btn_ParseJson.TabIndex = 2;
-            this.btn_ParseJson.Text = "开始解析(&S)";
+            this.btn_ParseJson.Text = "开始解析(&P)";
             this.btn_ParseJson.UseVisualStyleBackColor = true;
             this.btn_ParseJson.Click += new System.EventHandler(this.btn_ParseJson_Click);
+            // 
+            // btn_PDF2IMG
+            // 
+            this.btn_PDF2IMG.Location = new System.Drawing.Point(222, 469);
+            this.btn_PDF2IMG.Name = "btn_PDF2IMG";
+            this.btn_PDF2IMG.Size = new System.Drawing.Size(106, 41);
+            this.btn_PDF2IMG.TabIndex = 3;
+            this.btn_PDF2IMG.Text = "PDF转图片(&T)";
+            this.btn_PDF2IMG.UseVisualStyleBackColor = true;
+            this.btn_PDF2IMG.Click += new System.EventHandler(this.btn_PDF2IMG_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(664, 519);
+            this.Controls.Add(this.btn_PDF2IMG);
             this.Controls.Add(this.btn_ParseJson);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.process);
@@ -82,6 +94,7 @@
         private System.Windows.Forms.Button process;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btn_ParseJson;
+        private System.Windows.Forms.Button btn_PDF2IMG;
     }
 }
 

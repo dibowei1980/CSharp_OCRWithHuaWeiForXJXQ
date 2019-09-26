@@ -107,7 +107,10 @@ namespace OCRForXJXQ
             var json = JsonConvert.SerializeObject(oCRTable);
         }
 
-        
-
+        private void btn_PDF2IMG_Click(object sender, EventArgs e)
+        {
+            string pdfFileName = @"C:\Users\Administrator\Desktop\test\OCRTestData\0001(1)\0001\0001.pdf";
+            ConvertPdf2Image.Convert(pdfFileName, definition: ConvertPdf2Image.Definition.Four);
+        }
     }
 }

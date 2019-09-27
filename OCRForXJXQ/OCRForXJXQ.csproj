@@ -37,12 +37,15 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NPOI">
-      <HintPath>..\..\..\Z 参考源代码download Resource\NPOIforWord003\NPOIforWord003\AllInOne\main\bin\Release\NPOI.dll</HintPath>
+      <HintPath>libs\NPOI.dll</HintPath>
     </Reference>
     <Reference Include="NPOI.HWPF">
-      <HintPath>..\..\..\Z 参考源代码download Resource\NPOIforWord003\NPOIforWord003\AllInOne\HWPF\bin\Release\NPOI.HWPF.dll</HintPath>
+      <HintPath>libs\NPOI.HWPF.dll</HintPath>
     </Reference>
     <Reference Include="O2S.Components.PDFRender4NET">
       <HintPath>libs\O2S.Components.PDFRender4NET.dll</HintPath>

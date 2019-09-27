@@ -32,6 +32,7 @@
             this.txt_PdfFolder = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.tbn_SelectFolder = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // process
@@ -62,7 +63,7 @@
             // 
             // tbn_SelectFolder
             // 
-            this.tbn_SelectFolder.Location = new System.Drawing.Point(525, 115);
+            this.tbn_SelectFolder.Location = new System.Drawing.Point(525, 135);
             this.tbn_SelectFolder.Name = "tbn_SelectFolder";
             this.tbn_SelectFolder.Size = new System.Drawing.Size(106, 41);
             this.tbn_SelectFolder.TabIndex = 3;
@@ -70,11 +71,19 @@
             this.tbn_SelectFolder.UseVisualStyleBackColor = true;
             this.tbn_SelectFolder.Click += new System.EventHandler(this.tbn_SelectFolder_Click);
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(12, 103);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(631, 23);
+            this.progressBar1.TabIndex = 4;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(648, 235);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.tbn_SelectFolder);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txt_PdfFolder);
@@ -93,6 +102,7 @@
         private System.Windows.Forms.TextBox txt_PdfFolder;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button tbn_SelectFolder;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

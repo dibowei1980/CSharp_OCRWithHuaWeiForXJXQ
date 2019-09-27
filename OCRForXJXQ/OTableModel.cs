@@ -69,18 +69,19 @@ namespace OCRForXJXQ
             GuessTableName = tableName.ToString();
             RowCount = maxRow;
         }
-        
+
         /// <summary>
         /// 使用adjustDict对内容进行校正
         /// </summary>
         /// <param name="adjustDict"></param>
-        public void AdjustStringByDict(Dictionary<string,string> adjustDict)
+        public void AdjustStringByDict(Dictionary<string, string> adjustDict)
         {
-            foreach(string key in valueDict.Keys)
+            var keys = valueDict.Keys.ToList();
+            foreach (string key in keys)
             {
                 var value = valueDict[key];
-                foreach(var adKey in adjustDict.Keys)
-                    value.Replace(adKey, adjustDict[adKey]);
+                foreach (var adKey in adjustDict.Keys)
+                    value = value.Replace(adKey, adjustDict[adKey]);
                 valueDict[key] = value;
             }
         }

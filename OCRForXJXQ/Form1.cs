@@ -31,10 +31,10 @@ namespace OCRForXJXQ
 
         private void process_Click(object sender, EventArgs e)
         {
-            var pdfPath = txt_PdfFolder.Text;
-            if (!Directory.Exists(pdfPath))
+            var rootPath = txt_PdfFolder.Text;
+            if (!Directory.Exists(rootPath))
             {
-                MessageBox.Show(string.Format("目录{0}不存在", pdfPath));
+                MessageBox.Show(string.Format("目录{0}不存在", rootPath));
                 return;
             }
             //读取system目录下filter.txt文件中定义的PDF文件转换过滤正则表达式，只有与之匹配的文件才会被转换
@@ -54,11 +54,29 @@ namespace OCRForXJXQ
                         adjustStrDict.Add(key, value);
                 }
             }
+            var pdfCount = Directory.GetFiles(rootPath, "*.pdf", SearchOption.AllDirectories).Length;
+            progressBar1.Maximum = pdfCount;
+            progressBar1.Value = 0;
+            processPdf(rootPath, regex, adjustStrDict, ProgressStep);
+        }
+
+        private void ProgressStep()
+        {
+            if (progressBar1.Value < progressBar1.Maximum)
+                progressBar1.Value++;
+        }
+
+        private void processPdf(string pdfPath, System.Text.RegularExpressions.Regex regex, Dictionary<string, string> adjustStrDict, Action stepFunc)
+        {
+            var subFolders = Directory.GetDirectories(pdfPath);
+            foreach (var subFolder in subFolders)
+                processPdf(subFolder, regex, adjustStrDict, stepFunc);
+            var pdfFiles = Directory.GetFiles(pdfPath, "*.pdf");
             string dh;
             var dict = getFileDict(Path.Combine(pdfPath, "目录.doc"), out dh);
-            var pdfFiles = Directory.GetFiles(pdfPath, "*.pdf", SearchOption.AllDirectories);
             foreach (var pdf in pdfFiles)
             {
+                stepFunc();
                 string originName = Path.GetFileNameWithoutExtension(pdf);
                 string tableName = originName;
                 if (dict.ContainsKey(tableName))
@@ -98,7 +116,6 @@ namespace OCRForXJXQ
                 }
             }
         }
-
 
         private Dictionary<string, string> getFileDict(string docFileName, out string dh)
         {

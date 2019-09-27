@@ -44,27 +44,31 @@ namespace OCRForXJXQ
             var pdfFiles = Directory.GetFiles(pdfPath, "*.pdf", SearchOption.AllDirectories);
             foreach (var pdf in pdfFiles)
             {
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(pdf);
-                string tableName = fileNameWithoutExtension;
+                string originName = Path.GetFileNameWithoutExtension(pdf);
+                string tableName = originName;
                 if (dict.ContainsKey(tableName))
                     tableName = dict[tableName];
                 if (regex.IsMatch(tableName))
                 {
-                    var imgs = ConvertPdf2Image.Convert(pdf);
+                    var imgs = ConvertPdf2Image.Convert(pdf, definition: ConvertPdf2Image.Definition.Four);
                     var index = 1;
                     foreach (var img in imgs)
                     {
                         using (var stream = new MemoryStream())
                         {
-                            img.Save(stream, img.RawFormat);
-                            var bytes = new Byte[stream.Length];
-                            stream.Read(bytes, 0, bytes.Length);
+                            img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                            var bytes = stream.ToArray();
                             var imgBase64 = Convert.ToBase64String(bytes);
                             var jsonString = OCRParser.GetTableJsonStringByBase64(imgBase64);
-                            string jsonFileName = Path.Combine(pdfPath, string.Format("{0}_{1}", dh, tableName));
+                            OTable table = JsonConvert.DeserializeObject<OTable>(jsonString);
+                            OCRTable oCRTable = new OCRTable(table);
+                            //var json = JsonConvert.SerializeObject(oCRTable);
+                            var ocrTableString = oCRTable.ToString();
+                            string jsonFileName = Path.Combine(pdfPath, string.Format("{0}_{1}{2}", dh, originName, tableName));
                             if (imgs.Count > 1)
                                 jsonFileName += "_" + index++;
-                            jsonFileName += "_json.txt";
+                            jsonFileName += ".txt";
+                            File.WriteAllText(jsonFileName, ocrTableString);
                         }
                         img.Dispose();
                     }
@@ -114,22 +118,6 @@ namespace OCRForXJXQ
                     }
                 }
             return dict;
-        }
-
-
-
-        private void btn_ParseJson_Click(object sender, EventArgs e)
-        {
-            string jsonString = File.ReadAllText("c:\\test_json.txt", Encoding.UTF8);
-            OTable table = JsonConvert.DeserializeObject<OTable>(jsonString);
-            OCRTable oCRTable = new OCRTable(table);
-            var json = JsonConvert.SerializeObject(oCRTable);
-        }
-
-        private void btn_PDF2IMG_Click(object sender, EventArgs e)
-        {
-            string pdfFileName = @"C:\Users\Administrator\Desktop\test\OCRTestData\0001(1)\0001\0001.pdf";
-            ConvertPdf2Image.Convert(pdfFileName, definition: ConvertPdf2Image.Definition.Four);
         }
 
 

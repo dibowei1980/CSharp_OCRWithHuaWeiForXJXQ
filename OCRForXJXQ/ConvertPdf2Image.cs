@@ -24,14 +24,11 @@ namespace OCRForXJXQ
         /// <param name="pdfInputPath">PDF文件路径</param>
         /// <param name="startPageNum">从PDF文档的第几页开始转换</param>
         /// <param name="endPageNum">从PDF文档的第几页开始停止转换</param>
-        /// <param name="imageFormat">设置所需图片格式，默认为PNG</param>
         /// <param name="definition">设置图片的清晰度，数字越大越清晰</param>
-        public static List<Bitmap> Convert(string pdfInputPath, int startPageNum = -1, int endPageNum = -1, ImageFormat imageFormat = null, Definition definition = Definition.Ten)
+        public static List<Bitmap> Convert(string pdfInputPath, int startPageNum = -1, int endPageNum = -1, Definition definition = Definition.Ten)
         {
             using (PDFFile pdfFile = PDFFile.Open(pdfInputPath))
             {
-                if (imageFormat == null)
-                    imageFormat = ImageFormat.Png;
                 if (startPageNum <= 1)
                     startPageNum = 1;
                 // validate pageNum

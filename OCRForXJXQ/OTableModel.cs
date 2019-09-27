@@ -24,6 +24,7 @@ namespace OCRForXJXQ
             Dictionary<int, int> colCountDict = new Dictionary<int, int>();
             var regionIdx = 0;
             int maxRow = int.MinValue;
+            int tableIndex = 0;
             foreach (var region in oTable.result.regions)
             {
                 regionIdx++;
@@ -38,6 +39,7 @@ namespace OCRForXJXQ
                 }
                 else if (region.type == "table")
                 {
+                    tableIndex++;
                     foreach (var blk in region.Blocks)
                     {
                         var word = blk.Words.Replace("\n", "").Replace(" ", "");
@@ -55,13 +57,22 @@ namespace OCRForXJXQ
                             if (maxRow < row)
                                 maxRow = row;
                         }
-                        valueDict.Add(string.Format("{0}_{1}_{2}", regionIdx, curRow, curCol), word);
+                        valueDict.Add(string.Format("{0}_{1}_{2}", tableIndex, curRow, curCol), word);
                     }
                 }
             }
             GuessTableName = tableName.ToString();
             RowCount = maxRow;
+        }
 
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(GuessTableName);
+            sb.Append(System.Environment.NewLine);
+            foreach (var key in valueDict.Keys)
+                sb.Append(string.Format("{0}:{1}{2}", key, valueDict[key], System.Environment.NewLine));
+            return sb.ToString();
         }
     }
 

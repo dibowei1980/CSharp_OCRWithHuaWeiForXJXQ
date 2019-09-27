@@ -17,6 +17,11 @@ namespace OCRForXJXQ
         public int RowCount;
         public Dictionary<string, string> valueDict;
         static Regex regex_ch = new Regex(@"[\u4E00-\u9FA5]");
+        /// <summary>
+        /// 通过oTable对象解析表名和内容
+        /// 表单元格解析为一个字典：键由表的序例号，行号，当前行的列号组成，三个元素间用"_"分隔
+        /// </summary>
+        /// <param name="oTable"></param>
         public OCRTable(OTable oTable)
         {
             valueDict = new Dictionary<string, string>();
@@ -64,7 +69,27 @@ namespace OCRForXJXQ
             GuessTableName = tableName.ToString();
             RowCount = maxRow;
         }
+        
+        /// <summary>
+        /// 使用adjustDict对内容进行校正
+        /// </summary>
+        /// <param name="adjustDict"></param>
+        public void AdjustStringByDict(Dictionary<string,string> adjustDict)
+        {
+            foreach(string key in valueDict.Keys)
+            {
+                var value = valueDict[key];
+                foreach(var adKey in adjustDict.Keys)
+                    value.Replace(adKey, adjustDict[adKey]);
+                valueDict[key] = value;
+            }
+        }
 
+        /// <summary>
+        /// 该函数被覆写
+        /// 形成一个多行文本，第一行为表名，之后为键-值对，以":"分隔
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

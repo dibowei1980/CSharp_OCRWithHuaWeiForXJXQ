@@ -12,6 +12,12 @@ namespace OCRForXJXQ
     using Newtonsoft.Json;
     public static class OCRParser
     {
+        /// <summary>
+        /// 调用system目录下的用户身份Json文件（requestTokenString.txt)来获取Token
+        /// Token缓存在system目录下的Token.txt文件中
+        /// 该文件中记录有Token失败时间和Token，二者用";"分隔
+        /// </summary>
+        /// <returns></returns>
         public static string GetToken()
         {
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
@@ -72,6 +78,11 @@ namespace OCRForXJXQ
             return GetTableJsonStringByBase64(base64);
         }
 
+        /// <summary>
+        /// 调用华为文字识别通用表格API对转入的图片进行识别，并返回解析的Json文本。
+        /// </summary>
+        /// <param name="imgBase64">Base64开式的图片</param>
+        /// <returns></returns>
         public static string GetTableJsonStringByBase64(string imgBase64)
         {
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;

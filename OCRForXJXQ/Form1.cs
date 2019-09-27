@@ -37,8 +37,23 @@ namespace OCRForXJXQ
                 MessageBox.Show(string.Format("目录{0}不存在", pdfPath));
                 return;
             }
+            //读取system目录下filter.txt文件中定义的PDF文件转换过滤正则表达式，只有与之匹配的文件才会被转换
             var regextString = File.ReadAllLines(Environment.s_filterFileName, Encoding.GetEncoding("GBK"))[0];
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(regextString);
+            //读取system目录下的replaceString.txt文件中定义的校正文本，形成字典对解析的文本进行校正
+            var tmpStr = File.ReadAllLines(Environment.s_replaceFileName);
+            var adjustStrDict = new Dictionary<string, string>();
+            foreach (var strLine in tmpStr)
+            {
+                var ary = strLine.Split(',');
+                if (ary.Length > 1)
+                {
+                    var key = ary[0].Trim();
+                    var value = ary[1].Trim();
+                    if (!adjustStrDict.ContainsKey(key))
+                        adjustStrDict.Add(key, value);
+                }
+            }
             string dh;
             var dict = getFileDict(Path.Combine(pdfPath, "目录.doc"), out dh);
             var pdfFiles = Directory.GetFiles(pdfPath, "*.pdf", SearchOption.AllDirectories);
@@ -50,27 +65,35 @@ namespace OCRForXJXQ
                     tableName = dict[tableName];
                 if (regex.IsMatch(tableName))
                 {
+                    //将PDF转为图片列表
                     var imgs = ConvertPdf2Image.Convert(pdf, definition: ConvertPdf2Image.Definition.Four);
                     var index = 1;
                     foreach (var img in imgs)
                     {
+                        var imgBase64 = "";
+                        //将图片转为base64字串，以便传递给华为文字识别API
                         using (var stream = new MemoryStream())
                         {
                             img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                             var bytes = stream.ToArray();
-                            var imgBase64 = Convert.ToBase64String(bytes);
-                            var jsonString = OCRParser.GetTableJsonStringByBase64(imgBase64);
-                            OTable table = JsonConvert.DeserializeObject<OTable>(jsonString);
-                            OCRTable oCRTable = new OCRTable(table);
-                            //var json = JsonConvert.SerializeObject(oCRTable);
-                            var ocrTableString = oCRTable.ToString();
-                            string jsonFileName = Path.Combine(pdfPath, string.Format("{0}_{1}{2}", dh, originName, tableName));
-                            if (imgs.Count > 1)
-                                jsonFileName += "_" + index++;
-                            jsonFileName += ".txt";
-                            File.WriteAllText(jsonFileName, ocrTableString);
+                            imgBase64 = Convert.ToBase64String(bytes);
                         }
                         img.Dispose();
+                        //调用华为OCR接口返回JSON解析串
+                        var jsonString = OCRParser.GetTableJsonStringByBase64(imgBase64);
+                        //反序列化为OTable对象
+                        OTable table = JsonConvert.DeserializeObject<OTable>(jsonString);
+                        OCRTable oCRTable = new OCRTable(table);
+                        //进行解析文本校正
+                        oCRTable.AdjustStringByDict(adjustStrDict);
+                        //var json = JsonConvert.SerializeObject(oCRTable);
+                        var ocrTableString = oCRTable.ToString();
+                        //构造文本文件名
+                        string txtFileName = Path.Combine(pdfPath, string.Format("{0}_{1}{2}", dh, originName, tableName));
+                        if (imgs.Count > 1)
+                            txtFileName += "_" + index++;
+                        txtFileName += ".txt";
+                        File.WriteAllText(txtFileName, ocrTableString);
                     }
                 }
             }

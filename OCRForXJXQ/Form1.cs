@@ -41,7 +41,7 @@ namespace OCRForXJXQ
             var regextString = File.ReadAllLines(Environment.s_filterFileName, Encoding.GetEncoding("GBK"))[0];
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(regextString);
             //读取system目录下的replaceString.txt文件中定义的校正文本，形成字典对解析的文本进行校正
-            var tmpStr = File.ReadAllLines(Environment.s_replaceFileName);
+            var tmpStr = File.ReadAllLines(Environment.s_replaceFileName, Encoding.GetEncoding("GBK"));
             var adjustStrDict = new Dictionary<string, string>();
             foreach (var strLine in tmpStr)
             {

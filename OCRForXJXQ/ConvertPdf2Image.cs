@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Drawing;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -21,50 +22,43 @@ namespace OCRForXJXQ
         /// 将PDF文档转换为图片的方法
         /// </summary>
         /// <param name="pdfInputPath">PDF文件路径</param>
-        /// <param name="imageOutputPath">图片输出路径</param>
-        /// <param name="imageName">生成图片的名字</param>
         /// <param name="startPageNum">从PDF文档的第几页开始转换</param>
         /// <param name="endPageNum">从PDF文档的第几页开始停止转换</param>
-        /// <param name="imageFormat">设置所需图片格式</param>
+        /// <param name="imageFormat">设置所需图片格式，默认为PNG</param>
         /// <param name="definition">设置图片的清晰度，数字越大越清晰</param>
-        public static void Convert(string pdfInputPath, string imageOutputPath = "",
-            string imageName = "", int startPageNum = -1, int endPageNum = -1, ImageFormat imageFormat = null, Definition definition = Definition.Ten)
+        public static List<Bitmap> Convert(string pdfInputPath, int startPageNum = -1, int endPageNum = -1, ImageFormat imageFormat = null, Definition definition = Definition.Ten)
         {
-            PDFFile pdfFile = PDFFile.Open(pdfInputPath);
-            if (imageOutputPath == "")
-                imageOutputPath = Path.GetDirectoryName(pdfInputPath);
-            if (imageName == "")
-                imageName = Path.GetFileNameWithoutExtension(pdfInputPath);
-            if (!Directory.Exists(imageOutputPath))
-                Directory.CreateDirectory(imageOutputPath);
-            if (imageFormat == null)
-                imageFormat = ImageFormat.Png;
-            if (startPageNum <= 1)
-                startPageNum = 1;
-            // validate pageNum
-            if (startPageNum <= 0)
+            using (PDFFile pdfFile = PDFFile.Open(pdfInputPath))
             {
-                startPageNum = 1;
-            }
+                if (imageFormat == null)
+                    imageFormat = ImageFormat.Png;
+                if (startPageNum <= 1)
+                    startPageNum = 1;
+                // validate pageNum
+                if (startPageNum <= 0)
+                {
+                    startPageNum = 1;
+                }
 
-            if (endPageNum > pdfFile.PageCount || endPageNum < 1)
-                endPageNum = pdfFile.PageCount;
+                if (endPageNum > pdfFile.PageCount || endPageNum < 1)
+                    endPageNum = pdfFile.PageCount;
 
-            if (startPageNum > endPageNum)
-            {
-                int tempPageNum = startPageNum;
-                startPageNum = endPageNum;
-                endPageNum = startPageNum;
-            }
+                if (startPageNum > endPageNum)
+                {
+                    int tempPageNum = startPageNum;
+                    startPageNum = endPageNum;
+                    endPageNum = startPageNum;
+                }
 
-            // start to convert each page
-            for (int i = startPageNum; i <= endPageNum; i++)
-            {
-                Bitmap pageImage = pdfFile.GetPageImage(i - 1, 56 * (int)definition);
-                pageImage.Save(Path.Combine(imageOutputPath, imageName + "_" + i.ToString() + "." + imageFormat.ToString()), imageFormat);
-                pageImage.Dispose();
+                List<Bitmap> bmps = new List<Bitmap>();
+                // start to convert each page
+                for (int i = startPageNum; i <= endPageNum; i++)
+                {
+                    Bitmap pageImage = pdfFile.GetPageImage(i - 1, 56 * (int)definition);
+                    bmps.Add(pageImage);
+                }
+                return bmps;
             }
-            pdfFile.Dispose();
         }
     }
 }

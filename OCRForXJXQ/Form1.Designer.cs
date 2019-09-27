@@ -29,72 +29,70 @@
         private void InitializeComponent()
         {
             this.process = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.btn_ParseJson = new System.Windows.Forms.Button();
-            this.btn_PDF2IMG = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.txt_PdfFolder = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tbn_SelectFolder = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // process
             // 
-            this.process.Location = new System.Drawing.Point(545, 469);
+            this.process.Location = new System.Drawing.Point(525, 182);
             this.process.Name = "process";
             this.process.Size = new System.Drawing.Size(106, 41);
             this.process.TabIndex = 0;
-            this.process.Text = "开始处理(&S)";
+            this.process.Text = "开始处理(&P)";
             this.process.UseVisualStyleBackColor = true;
             this.process.Click += new System.EventHandler(this.process_Click);
             // 
-            // pictureBox1
+            // txt_PdfFolder
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(2, 3);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(661, 457);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
+            this.txt_PdfFolder.Location = new System.Drawing.Point(14, 35);
+            this.txt_PdfFolder.Multiline = true;
+            this.txt_PdfFolder.Name = "txt_PdfFolder";
+            this.txt_PdfFolder.Size = new System.Drawing.Size(629, 62);
+            this.txt_PdfFolder.TabIndex = 1;
             // 
-            // btn_ParseJson
+            // label1
             // 
-            this.btn_ParseJson.Location = new System.Drawing.Point(368, 469);
-            this.btn_ParseJson.Name = "btn_ParseJson";
-            this.btn_ParseJson.Size = new System.Drawing.Size(106, 41);
-            this.btn_ParseJson.TabIndex = 2;
-            this.btn_ParseJson.Text = "开始解析(&P)";
-            this.btn_ParseJson.UseVisualStyleBackColor = true;
-            this.btn_ParseJson.Click += new System.EventHandler(this.btn_ParseJson_Click);
+            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(334, 23);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "需要处理的PDF所在目录";
             // 
-            // btn_PDF2IMG
+            // tbn_SelectFolder
             // 
-            this.btn_PDF2IMG.Location = new System.Drawing.Point(222, 469);
-            this.btn_PDF2IMG.Name = "btn_PDF2IMG";
-            this.btn_PDF2IMG.Size = new System.Drawing.Size(106, 41);
-            this.btn_PDF2IMG.TabIndex = 3;
-            this.btn_PDF2IMG.Text = "PDF转图片(&T)";
-            this.btn_PDF2IMG.UseVisualStyleBackColor = true;
-            this.btn_PDF2IMG.Click += new System.EventHandler(this.btn_PDF2IMG_Click);
+            this.tbn_SelectFolder.Location = new System.Drawing.Point(525, 115);
+            this.tbn_SelectFolder.Name = "tbn_SelectFolder";
+            this.tbn_SelectFolder.Size = new System.Drawing.Size(106, 41);
+            this.tbn_SelectFolder.TabIndex = 3;
+            this.tbn_SelectFolder.Text = "选择目录(&S)";
+            this.tbn_SelectFolder.UseVisualStyleBackColor = true;
+            this.tbn_SelectFolder.Click += new System.EventHandler(this.tbn_SelectFolder_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(664, 519);
-            this.Controls.Add(this.btn_PDF2IMG);
-            this.Controls.Add(this.btn_ParseJson);
-            this.Controls.Add(this.pictureBox1);
+            this.ClientSize = new System.Drawing.Size(648, 235);
+            this.Controls.Add(this.tbn_SelectFolder);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.txt_PdfFolder);
             this.Controls.Add(this.process);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "Form1";
             this.Text = "Form1";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.Button process;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button btn_ParseJson;
-        private System.Windows.Forms.Button btn_PDF2IMG;
+        private System.Windows.Forms.TextBox txt_PdfFolder;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button tbn_SelectFolder;
     }
 }
 

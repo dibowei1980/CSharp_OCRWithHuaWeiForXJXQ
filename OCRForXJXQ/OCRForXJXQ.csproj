@@ -35,10 +35,14 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="NPOI">
-      <HintPath>..\..\..\..\..\..\CommonLibs\NET4\AnyCPU\NPOI 2.3.0\NPOI.dll</HintPath>
+      <HintPath>..\..\..\Z 参考源代码download Resource\NPOIforWord003\NPOIforWord003\AllInOne\main\bin\Release\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.HWPF">
+      <HintPath>..\..\..\Z 参考源代码download Resource\NPOIforWord003\NPOIforWord003\AllInOne\HWPF\bin\Release\NPOI.HWPF.dll</HintPath>
     </Reference>
     <Reference Include="O2S.Components.PDFRender4NET">
       <HintPath>libs\O2S.Components.PDFRender4NET.dll</HintPath>
@@ -56,12 +60,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvertPdf2Image.cs" />
+    <Compile Include="Environment.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="OCRParser.cs" />
     <Compile Include="OTableModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

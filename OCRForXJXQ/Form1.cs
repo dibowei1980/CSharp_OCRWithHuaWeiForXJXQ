@@ -14,90 +14,109 @@ namespace OCRForXJXQ
     using System.Xml;
     using Newtonsoft.Json.Serialization;
     using Newtonsoft.Json;
+
+    using NPOI;
+    using NPOI.HWPF.UserModel;
+    using NPOI.HWPF.Model;
+    using NPOI.HWPF;
+    using NPOI.HWPF.Extractor;
+
+
     public partial class Form1 : Form
     {
-        string m_requestTokenFileName = "";
-        string m_systemPath = "";
-        string m_tokenFileName = "";
         public Form1()
         {
             InitializeComponent();
-            m_systemPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "..\\..\\system");
-            m_requestTokenFileName = Path.Combine(m_systemPath, "requestTokenString.txt");
-            m_tokenFileName = Path.Combine(m_systemPath, "token.txt");
         }
 
         private void process_Click(object sender, EventArgs e)
         {
-            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-            var str = "";
-            if (File.Exists(m_tokenFileName))
-                str = File.ReadAllText(m_tokenFileName);
-            var ary = str.Split(';');
-            string token = "";
-            DateTime dt;
-            DateTime.TryParse(ary[0], out dt);
-            if (dt > DateTime.Now)
-                token = ary[1];
-            else
+            var pdfPath = txt_PdfFolder.Text;
+            if (!Directory.Exists(pdfPath))
             {
-                string token_jsonParam = File.ReadAllText(m_requestTokenFileName, Encoding.UTF8);
-                var token_url = "https://iam.myhuaweicloud.com/v3/auth/tokens";
-                var token_request = (HttpWebRequest)WebRequest.Create(token_url);
-                token_request.Method = "POST";
-                token_request.ContentType = "application/json;charset=UTF-8";
-                byte[] byteData_tokenrequest = Encoding.UTF8.GetBytes(token_jsonParam);
-                int tlength = byteData_tokenrequest.Length;
-                token_request.ContentLength = tlength;
-                var tWriter = token_request.GetRequestStream();
-                tWriter.Write(byteData_tokenrequest, 0, tlength);
-                tWriter.Close();
-                using (var tResponse = (HttpWebResponse)token_request.GetResponse())
+                MessageBox.Show(string.Format("目录{0}不存在", pdfPath));
+                return;
+            }
+            var regextString = File.ReadAllLines(Environment.s_filterFileName, Encoding.GetEncoding("GBK"))[0];
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(regextString);
+            string dh;
+            var dict = getFileDict(Path.Combine(pdfPath, "目录.doc"), out dh);
+            var pdfFiles = Directory.GetFiles(pdfPath, "*.pdf", SearchOption.AllDirectories);
+            foreach (var pdf in pdfFiles)
+            {
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(pdf);
+                string tableName = fileNameWithoutExtension;
+                if (dict.ContainsKey(tableName))
+                    tableName = dict[tableName];
+                if (regex.IsMatch(tableName))
                 {
-                    var tHeader = tResponse.Headers;
-                    for (int i = 0; i < tHeader.Keys.Count; i++)
+                    var imgs = ConvertPdf2Image.Convert(pdf);
+                    var index = 1;
+                    foreach (var img in imgs)
                     {
-                        if (tHeader.Keys[i] == "X-Subject-Token")
+                        using (var stream = new MemoryStream())
                         {
-                            token = tHeader["X-Subject-Token"];
-                            break;
+                            img.Save(stream, img.RawFormat);
+                            var bytes = new Byte[stream.Length];
+                            stream.Read(bytes, 0, bytes.Length);
+                            var imgBase64 = Convert.ToBase64String(bytes);
+                            var jsonString = OCRParser.GetTableJsonStringByBase64(imgBase64);
+                            string jsonFileName = Path.Combine(pdfPath, string.Format("{0}_{1}", dh, tableName));
+                            if (imgs.Count > 1)
+                                jsonFileName += "_" + index++;
+                            jsonFileName += "_json.txt";
                         }
-                    }
-                    using (var responseStream = tResponse.GetResponseStream())
-                    using (var reader = new StreamReader(responseStream))
-                    {
-                        string report = reader.ReadToEnd();
-                        var tree = JsonConvert.DeserializeXmlNode(report).ChildNodes;
-
-                        File.WriteAllText(m_tokenFileName, tree[0].ChildNodes[0].ChildNodes[0].Value + ";" + token, Encoding.UTF8);
+                        img.Dispose();
                     }
                 }
             }
-            if (token == "")
-            {
-                MessageBox.Show("token获取失败.");
-                return;
-            }
-            string _url = "https://ocr.cn-north-1.myhuaweicloud.com/v1.0/ocr/general-table";
-            var request = (HttpWebRequest)WebRequest.Create(_url);
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            request.Headers.Add("X-Auth-Token", token);
-            string imgFileName = Path.Combine(m_systemPath, "test\\0001.png");
-            var base64 = Convert.ToBase64String(System.IO.File.ReadAllBytes(imgFileName));
-            var jsonParam = string.Format("{1}\"image\" : \"{0}\",\n\"return_confidence\" : false{2}", base64, "{", "}");
-            byte[] byteData = Encoding.UTF8.GetBytes(jsonParam);
-            int length = byteData.Length;
-            request.ContentLength = length;
-            Stream writer = request.GetRequestStream();
-            writer.Write(byteData, 0, length);
-            writer.Close();
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                var responseString = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding("utf-8")).ReadToEnd();
-                File.WriteAllText("c:\\test_json.txt", responseString, Encoding.UTF8);
-            }
         }
+
+
+        private Dictionary<string, string> getFileDict(string docFileName, out string dh)
+        {
+            dh = "";
+            var dict = new Dictionary<string, string>();
+            if (File.Exists(docFileName))
+                using (Stream stream = new FileStream(docFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    HWPFDocument hd = new HWPFDocument(stream);
+                    var paraTable = hd.ParagraphTable;
+                    Range rang = hd.GetRange();
+                    int paragraphCount = rang.NumParagraphs;
+                    for (int i = 0; i < paragraphCount; i++)
+                    {
+                        var pph = rang.GetParagraph(i);
+                        var text = pph.Text.Replace(":", "：").Replace(" ", "").Trim();
+                        if (text.StartsWith("档号："))
+                        {
+                            dh = text.Replace("档号：", "").Trim();
+                            break;
+                        }
+                    }
+                    rang = hd.GetRange();
+                    TableIterator it = new TableIterator(rang);
+                    while (it.HasNext())
+                    {
+                        NPOI.HWPF.UserModel.Table tb = (NPOI.HWPF.UserModel.Table)it.Next();
+                        for (int i = 0; i < tb.NumRows; i++)
+                        {
+                            var row = tb.GetRow(i);
+                            var cellCount = row.numCells();
+                            if (cellCount > 1)
+                            {
+                                var key = row.GetCell(0).Text.Trim().Replace("\a", "");
+                                var value = row.GetCell(1).Text.Trim().Replace("\a", "");
+                                if (!dict.ContainsKey(key))
+                                    dict.Add(key, value);
+                            }
+                        }
+                    }
+                }
+            return dict;
+        }
+
+
 
         private void btn_ParseJson_Click(object sender, EventArgs e)
         {
@@ -111,6 +130,15 @@ namespace OCRForXJXQ
         {
             string pdfFileName = @"C:\Users\Administrator\Desktop\test\OCRTestData\0001(1)\0001\0001.pdf";
             ConvertPdf2Image.Convert(pdfFileName, definition: ConvertPdf2Image.Definition.Four);
+        }
+
+
+        private void tbn_SelectFolder_Click(object sender, EventArgs e)
+        {
+            var dlg = new FolderBrowserDialog();
+            if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return;
+            txt_PdfFolder.Text = dlg.SelectedPath;
         }
     }
 }
